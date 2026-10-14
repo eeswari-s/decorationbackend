@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import multer from "multer";
 import connectDB from "./Database/Db.js";
+import corsOptions from "./Config/Cors.js";
 
 // Routes
 import ContactRoutes from "./Routes/ContactRoutes.js";
@@ -20,15 +21,9 @@ const app = express();
 // Behind a hosting proxy (Render, Railway, Nginx...) so rate limit sees the real IP
 app.set("trust proxy", 1);
 
-// Allowed frontend URLs (comma separated). Empty = allow all
-const allowedOrigins = (process.env.CLIENT_URL || "")
-  .split(",")
-  .map((url) => url.trim())
-  .filter(Boolean);
-
 // Middleware
 app.use(helmet());
-app.use(cors(allowedOrigins.length ? { origin: allowedOrigins } : {}));
+app.use(cors(corsOptions)); // allowed URLs are in Config/Cors.js
 app.use(express.json({ limit: "100kb" }));
 
 // Express 5 leaves req.body undefined when no body is sent
