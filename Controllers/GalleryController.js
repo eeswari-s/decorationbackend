@@ -1,4 +1,6 @@
 import Gallery from "../Models/GalleryModel.js";
+import { handleError } from "../Utils/HandleError.js";
+import { deleteImage } from "../Utils/DeleteImage.js";
 
 // POST /api/gallery
 export const createGallery = async (req, res) => {
@@ -13,7 +15,7 @@ export const createGallery = async (req, res) => {
 
     res.status(201).json(gallery);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -23,7 +25,7 @@ export const getGallery = async (req, res) => {
     const data = await Gallery.find().sort({ createdAt: -1 });
     res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -32,10 +34,16 @@ export const deleteGallery = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await Gallery.findByIdAndDelete(id);
+    const gallery = await Gallery.findByIdAndDelete(id);
+
+    if (!gallery) {
+      return res.status(404).json({ message: "Gallery item not found" });
+    }
+
+    await deleteImage(gallery.image);
 
     res.status(200).json({ message: "Deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };

@@ -4,11 +4,12 @@ import {
   getGallery,
   deleteGallery,
 } from "../Controllers/GalleryController.js";
+import { protect } from "../Middleware/Auth.js";
 
 const router = express.Router();
 
-router.post("/", createGallery);
-router.get("/", getGallery);
-router.delete("/:id", deleteGallery);
+router.get("/", getGallery); // public
+router.post("/", protect, createGallery); // admin
+router.delete("/:id", protect, deleteGallery); // admin
 
 export default router;

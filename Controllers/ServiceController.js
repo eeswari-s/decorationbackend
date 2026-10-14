@@ -1,4 +1,6 @@
 import Service from "../Models/ServiceModel.js";
+import { handleError } from "../Utils/HandleError.js";
+import { deleteImage } from "../Utils/DeleteImage.js";
 
 // POST /api/service
 export const createService = async (req, res) => {
@@ -13,7 +15,7 @@ export const createService = async (req, res) => {
 
     res.status(201).json(service);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -23,7 +25,7 @@ export const getServices = async (req, res) => {
     const services = await Service.find().sort({ createdAt: -1 });
     res.status(200).json(services);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -31,16 +33,28 @@ export const getServices = async (req, res) => {
 export const updateService = async (req, res) => {
   try {
     const { id } = req.params;
+    const { title, description, image } = req.body;
 
-    const updatedService = await Service.findByIdAndUpdate(
+    const oldService = await Service.findByIdAndUpdate(
       id,
-      req.body,
-      { new: true }
+      { title, description, image },
+      { runValidators: true }
     );
+
+    if (!oldService) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Remove the old image from Cloudinary when it is replaced
+    if (image && image !== oldService.image) {
+      await deleteImage(oldService.image);
+    }
+
+    const updatedService = await Service.findById(id);
 
     res.status(200).json(updatedService);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -49,10 +63,16 @@ export const deleteService = async (req, res) => {
   try {
     const { id } = req.params;
 
-    await Service.findByIdAndDelete(id);
+    const service = await Service.findByIdAndDelete(id);
+
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    await deleteImage(service.image);
 
     res.status(200).json({ message: "Service deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };

@@ -1,4 +1,5 @@
 import Booking from "../Models/BookingModel.js";
+import { handleError } from "../Utils/HandleError.js";
 
 // POST /api/booking
 export const createBooking = async (req, res) => {
@@ -19,13 +20,13 @@ export const createBooking = async (req, res) => {
       functionType,
       date,
       mandapLocation,
-      serviceId,
+      serviceId: serviceId || undefined,
       numberOfEvents,
     });
 
     res.status(201).json(booking);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
   }
 };
 
@@ -38,6 +39,21 @@ export const getBookings = async (req, res) => {
 
     res.status(200).json(bookings);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    handleError(res, error);
+  }
+};
+
+// DELETE /api/booking/:id
+export const deleteBooking = async (req, res) => {
+  try {
+    const item = await Booking.findByIdAndDelete(req.params.id);
+
+    if (!item) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.status(200).json({ message: "Booking deleted successfully" });
+  } catch (error) {
+    handleError(res, error);
   }
 };
