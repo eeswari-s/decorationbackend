@@ -3,7 +3,8 @@
 const allowedOrigins = [
   "http://localhost:5173", // Vite dev server
   "http://localhost:3000", // React (CRA) / Next.js dev server
-  // "https://kalaivanidecoration.com",
+  "https://www.sathiyavaniflowerdecoration.online", // live website
+  "https://sathiyavaniflowerdecoration.online", // live website without www
 ];
 
 const corsOptions = {
